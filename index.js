@@ -1,10 +1,13 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const path = require('path')
+const favicon = require("serve-favicon");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const port = process.env.PORT || 8800;
 const app = express();
 
+app.use(favicon(path.join(__dirname, "public", "favicon.png")));
 app.use(cors());
 app.use(express.json());
 
@@ -33,6 +36,12 @@ chillGamer = async () => {
         });
         app.get("/users", (req, res) => {
             res.send("This is Users API");
+        });
+
+        app.post("/users", async (req, res) => {
+            const data = req.body;
+            const result = await users.insertOne(data);
+            res.send(result);
         });
 
         /**
