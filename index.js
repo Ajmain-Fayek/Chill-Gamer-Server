@@ -31,8 +31,24 @@ chillGamer = async () => {
         const users = database.collection("users");
         const reviews = database.collection("reviews");
 
-        app.get("/reviews", (req, res) => {
-            res.send("This is reviews API");
+        // --------------------------------------------------
+        // REVIEWS RELATED API"S                           //
+        // --------------------------------------------------
+        app.get("/reviews", async (req, res) => {
+            const data = await reviews.find({}).toArray();
+            res.send(data);
+        });
+
+        app.post("/reviews", async (req, res) => {
+            const data = req.body;
+            const result = await reviews.insertOne(data);
+            res.send(result);
+        });
+
+        app.put("/reviews/:id", async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const {} = req.body;
         });
 
         // --------------------------------------------------
@@ -42,83 +58,60 @@ chillGamer = async () => {
             const result = await users.find({}).toArray();
             res.send(result);
         });
+
         //  Create a user
         app.post("/users", async (req, res) => {
             const data = req.body;
-            const result = await users.insertOne(data);
+            const addUser = {};
+
+            // data validation
+            // Check  whitch field is true
+            for (const [key, value] of Object.entries(data)) {
+                if (typeof value === "string" && value.trim() !== "") {
+                    // Only take none empty values to update addUser
+                    addUser[key] = value.trim(); // remove any white space from start or ending of the string
+                } else if (typeof value === "number" && !isNaN(value)) {
+                    addUser[key] = value; // if value is a number then add it into the addUser
+                }
+            }
+
+            // Check if the addUser is empty
+            if (Object.keys(addUser).length === 0) {
+                return res
+                    .status(404)
+                    .json({ error: "No Valid User Data Found" });
+            }
+
+            const result = await users.insertOne(addUser);
             res.send(result);
         });
+
         // Update users Info
         app.put("/users/:id", async (req, res) => {
             const id = req.params.id;
-            const { photoUrl, displayName, email } = req.body;
+            const data = req.body;
             const filter = { _id: new ObjectId(id) };
             let updateData = {};
 
+            // data validation
             // Check whitch field is true
-            photoUrl
-                ? displayName // photoUrl = true
-                    ? email // displayName = true
-                        ? // email = ture
-                          (updateData = {
-                              $set: {
-                                  photoUrl,
-                                  displayName,
-                                  email,
-                              },
-                          })
-                        : // email = false
-                          (updateData = {
-                              $set: {
-                                  photoUrl,
-                                  displayName,
-                              },
-                          })
-                    : email // displayName = false
-                    ? // email = true
-                      (updateData = {
-                          $set: {
-                              photoUrl,
-                              email,
-                          },
-                      })
-                    : // email =  false
-                      (updateData = {
-                          $set: {
-                              photoUrl,
-                          },
-                      })
-                : displayName // photoUrl = false
-                ? email // displayName = true
-                    ? // email =  true
-                      (updateData = {
-                          $set: {
-                              displayName,
-                              email,
-                          },
-                      })
-                    : // email = false
-                      (updateData = {
-                          $set: {
-                              displayName,
-                          },
-                      })
-                : email // displayName = false
-                ? // email = true
-                  (updateData = {
-                      $set: {
-                          email,
-                      },
-                  })
-                : (updateData = { empty: "empty" }); // email = false
-
-            // Check updateData
-            if (updateData.empty === "empty") {
-                return res.send({ error: "Couldn't Update Data" });
-            } else {
-                const result = await users.updateOne(filter, updateData);
-                return res.send(result);
+            for (const [key, value] of Object.entries(data)) {
+                if (typeof value === "string" && value.trim() !== "") {
+                    updateData[key] = value.trim();
+                } else if (typeof value === "number" && !isNaN(value)) {
+                    updateData[key] = value;
+                }
             }
+
+            // Check if updateData is empty
+            if (Object.keys(updateData).length === 0) {
+                return res.status(404).json({ error: "No Valid Data Found" });
+            }
+
+            const result = await users.updateOne(filter, {
+                $set: updateData,
+            });
+            res.send(result);
         });
 
         // Delete an User
@@ -128,15 +121,6 @@ chillGamer = async () => {
             const result = await users.deleteOne(query);
             res.send(result);
         });
-
-        /**
-         * Send a ping to cinfirm a successful connection
-         * comment it when deplyoing into Vercel
-         */
-        // await client.db("chill_gamer").command({ ping: 1 });
-        // console.log(
-        //     "Pinged your deployment. You successfully connected to MongoDB"
-        // );
     } catch {
         console.dir;
     }
