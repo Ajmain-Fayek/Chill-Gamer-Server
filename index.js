@@ -34,6 +34,10 @@ chillGamer = async () => {
         app.get("/reviews", (req, res) => {
             res.send("This is reviews API");
         });
+
+        // --------------------------------------------------
+        // USERS RELATED API"S                             //
+        // --------------------------------------------------
         app.get("/users", async (req, res) => {
             const result = await users.find({}).toArray();
             res.send(result);
@@ -50,54 +54,63 @@ chillGamer = async () => {
             const { photoUrl, displayName, email } = req.body;
             const filter = { _id: new ObjectId(id) };
             let updateData = {};
+
+            // Check whitch field is true
             photoUrl
-                ? displayName
-                    ? email
-                        ? (updateData = {
+                ? displayName // photoUrl = true
+                    ? email // displayName = true
+                        ? // email = ture
+                          (updateData = {
                               $set: {
                                   photoUrl,
                                   displayName,
                                   email,
                               },
                           })
-                        : (updateData = {
+                        : // email = false
+                          (updateData = {
                               $set: {
                                   photoUrl,
                                   displayName,
                               },
                           })
-                    : email
-                    ? (updateData = {
+                    : email // displayName = false
+                    ? // email = true
+                      (updateData = {
                           $set: {
                               photoUrl,
                               email,
                           },
                       })
-                    : (updateData = {
+                    : // email =  false
+                      (updateData = {
                           $set: {
                               photoUrl,
                           },
                       })
-                : displayName
-                ? email
-                    ? (updateData = {
+                : displayName // photoUrl = false
+                ? email // displayName = true
+                    ? // email =  true
+                      (updateData = {
                           $set: {
                               displayName,
                               email,
                           },
                       })
-                    : (updateData = {
+                    : // email = false
+                      (updateData = {
                           $set: {
                               displayName,
                           },
                       })
-                : email
-                ? (updateData = {
+                : email // displayName = false
+                ? // email = true
+                  (updateData = {
                       $set: {
                           email,
                       },
                   })
-                : (updateData = { empty: "empty" });
+                : (updateData = { empty: "empty" }); // email = false
 
             // Check updateData
             if (updateData.empty === "empty") {
@@ -108,6 +121,7 @@ chillGamer = async () => {
             }
         });
 
+        // Delete an User
         app.delete("/users/:id", async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
