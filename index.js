@@ -1,9 +1,9 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const path = require('path')
+const path = require("path");
 const favicon = require("serve-favicon");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 8800;
 const app = express();
 
@@ -29,18 +29,89 @@ chillGamer = async () => {
          */
         const database = client.db("chill_gamer");
         const users = database.collection("users");
-        const games = database.collection("games");
+        const reviews = database.collection("reviews");
 
-        app.get("/games", (req, res) => {
-            res.send("This is games API");
+        app.get("/reviews", (req, res) => {
+            res.send("This is reviews API");
         });
-        app.get("/users", (req, res) => {
-            res.send("This is Users API");
+        app.get("/users", async (req, res) => {
+            const result = await users.find({}).toArray();
+            res.send(result);
         });
-
+        //  Create a user
         app.post("/users", async (req, res) => {
             const data = req.body;
             const result = await users.insertOne(data);
+            res.send(result);
+        });
+        // Update users Info
+        app.put("/users/:id", async (req, res) => {
+            const id = req.params.id;
+            const { photoUrl, displayName, email } = req.body;
+            const filter = { _id: new ObjectId(id) };
+            let updateData = {};
+            photoUrl
+                ? displayName
+                    ? email
+                        ? (updateData = {
+                              $set: {
+                                  photoUrl,
+                                  displayName,
+                                  email,
+                              },
+                          })
+                        : (updateData = {
+                              $set: {
+                                  photoUrl,
+                                  displayName,
+                              },
+                          })
+                    : email
+                    ? (updateData = {
+                          $set: {
+                              photoUrl,
+                              email,
+                          },
+                      })
+                    : (updateData = {
+                          $set: {
+                              photoUrl,
+                          },
+                      })
+                : displayName
+                ? email
+                    ? (updateData = {
+                          $set: {
+                              displayName,
+                              email,
+                          },
+                      })
+                    : (updateData = {
+                          $set: {
+                              displayName,
+                          },
+                      })
+                : email
+                ? (updateData = {
+                      $set: {
+                          email,
+                      },
+                  })
+                : (updateData = { empty: "empty" });
+
+            // Check updateData
+            if (updateData.empty === "empty") {
+                return res.send({ error: "Couldn't Update Data" });
+            } else {
+                const result = await users.updateOne(filter, updateData);
+                return res.send(result);
+            }
+        });
+
+        app.delete("/users/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await users.deleteOne(query);
             res.send(result);
         });
 
