@@ -54,7 +54,6 @@ chillGamer = async () => {
                 isNaN(query)
             ) {
                 const email = query.trim();
-                console.log(email);
                 if (email.length === 0) {
                     return res
                         .status(400)
@@ -188,14 +187,28 @@ chillGamer = async () => {
                     .json({ error: "Invalid User ID Format" });
             }
             const query = { _id: new ObjectId(id) };
-            const result = await users.findOne(query, {
+
+            //Find watchList ID's from User data
+            const listOfWatchlist = await users.findOne(query, {
                 projection: { _id: 0, watchList: 1 },
             });
 
-            if (Object.keys(result).length === 0) {
+            if (Object.keys(listOfWatchlist).length === 0) {
                 return res.status(404).json({ error: "No Watchlist Found" });
             }
-            res.status(200).json(result);
+
+            // New query to find Detailed Data
+            const newQuery = listOfWatchlist.watchList.map(
+                (id) => new ObjectId(id)
+            );
+
+            const result = await reviews
+                .find({ _id: { $in: newQuery } })
+                .toArray();
+            res.status(200).json({
+                message: `Reviews Found = ${result.length}`,
+                result,
+            });
         });
 
         //  Create a user
