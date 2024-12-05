@@ -178,9 +178,26 @@ chillGamer = async () => {
             });
         });
 
+        // Get signle User
+        app.get("/users/search", async (req, res) => {
+            const { email } = req.query;
+            const query = {
+                email: email.trim(),
+            };
+            const result = await users.findOne(query);
+            if (!result) {
+                return res.status(404).json({ error: "User Not Found" });
+            }
+            if (Object.keys(result).length === 0) {
+                return res.status(404).json({ error: "User Not Found" });
+            }
+            res.status(200).json(result);
+        });
+
         // My Watch List
         app.get("/users/:id", async (req, res) => {
             const id = req.params.id;
+            // console.log(id);
             if (!ObjectId.isValid(id)) {
                 return res
                     .status(400)
@@ -232,6 +249,11 @@ chillGamer = async () => {
                 return res
                     .status(400)
                     .json({ error: "No Valid Fields Provided" });
+            }
+
+            const userExist = await users.findOne({ email: addUser?.email });
+            if (userExist) {
+                return res.status(202).json({ message: "User Already Exists" });
             }
 
             const result = await users.insertOne(addUser);
@@ -339,6 +361,7 @@ chillGamer = async () => {
         // Delete an User
         app.delete("/users/:id", async (req, res) => {
             const id = req.params.id;
+            // console.log(id)
             if (!ObjectId.isValid(id)) {
                 return res
                     .status(400)
