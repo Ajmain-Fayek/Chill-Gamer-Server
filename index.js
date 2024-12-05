@@ -238,6 +238,56 @@ chillGamer = async () => {
             });
         });
 
+        // My Watchlist
+        app.patch("/users/:id", async (req, res) => {
+            const id = req.params.id;
+            const data = req.body;
+            const filter = { _id: new ObjectId(id) };
+            let updateWatchlist = {};
+
+            // data validation
+            // Check whitch field is true
+            for (const [key, value] of Object.entries(data)) {
+                if (typeof value === "string" && value.trim() !== "") {
+                    updateWatchlist[key] = value.trim();
+                } else if (typeof value === "number" && !isNaN(value)) {
+                    updateWatchlist[key] = value;
+                }
+            }
+
+            // Check if updateWatchlist is empty
+            if (Object.keys(updateWatchlist).length === 0) {
+                return res.status(400).json({ error: "No Valid Field Found" });
+            }
+
+            const WatchList = await users.findOne(filter);
+            if (WatchList.watchList) {
+                const result = await users.updateOne(filter, {
+                    $set: {
+                        watchList: [
+                            ...WatchList.watchList,
+                            updateWatchlist.watchList,
+                        ],
+                    },
+                });
+                return res.status(200).json({
+                    message: "WatchList Added Successfully",
+                    result,
+                });
+            }
+            const result = await users.updateOne(
+                filter,
+                {
+                    $set: { watchList: [updateWatchlist.watchList] },
+                },
+                { upsert: true }
+            );
+            res.status(200).json({
+                message: "WatchList Added Successfully",
+                result,
+            });
+        });
+
         // Delete an User
         app.delete("/users/:id", async (req, res) => {
             const id = req.params.id;
