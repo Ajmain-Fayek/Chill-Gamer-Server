@@ -45,6 +45,36 @@ chillGamer = async () => {
             });
         });
 
+        // My reviews
+        app.get("/reviews/search", async (req, res) => {
+            const { query } = req.query;
+            if (
+                typeof query === "string" &&
+                query.trim() !== "" &&
+                isNaN(query)
+            ) {
+                const email = query.trim();
+                console.log(email);
+                if (email.length === 0) {
+                    return res
+                        .status(400)
+                        .json({ error: "No valid Email Found" });
+                }
+                const result = await reviews.find({ email }).toArray();
+
+                if (result.length === 0) {
+                    return res.status(404).json({ error: "No Reviews Found" });
+                }
+
+                return res.status(200).json({
+                    message: `Reviews Found = ${result.length}`,
+                    result,
+                });
+            } else {
+                return res.status(400).json({ error: "No valid Email Found" });
+            }
+        });
+
         // Add review
         app.post("/reviews", async (req, res) => {
             const data = req.body;
@@ -230,8 +260,8 @@ chillGamer = async () => {
                 result,
             });
         });
-    } catch {
-        console.dir;
+    } catch (err) {
+        console.log(err);
     }
 };
 chillGamer();
