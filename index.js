@@ -162,6 +162,7 @@ chillGamer = async () => {
         // --------------------------------------------------
         // USERS RELATED API"S                             //
         // --------------------------------------------------
+        // Get all Users
         app.get("/users", async (req, res) => {
             const result = await users.find({}).toArray();
             if (result.length === 0) {
@@ -171,6 +172,20 @@ chillGamer = async () => {
                 message: `Users Found = ${result.length}`,
                 result,
             });
+        });
+
+        // My Watch List
+        app.get("/users/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await users.findOne(query, {
+                projection: { _id: 0, watchList: 1 },
+            });
+
+            if (Object.keys(result).length === 0) {
+                return res.status(404).json({ error: "No Watchlist Found" });
+            }
+            res.status(200).json(result);
         });
 
         //  Create a user
@@ -238,7 +253,7 @@ chillGamer = async () => {
             });
         });
 
-        // My Watchlist
+        // Add Watchlist
         app.patch("/users/:id", async (req, res) => {
             const id = req.params.id;
             const data = req.body;
