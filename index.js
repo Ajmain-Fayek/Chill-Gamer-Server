@@ -36,7 +36,7 @@ chillGamer = async () => {
         // --------------------------------------------------
         app.get("/reviews", async (req, res) => {
             const result = await reviews.find({}).toArray();
-            if (result.length === 0) {
+            if (Object.keys(result).length === 0) {
                 return res.status(404).json({ error: "No Data Found" });
             }
             res.status(200).json({
@@ -62,7 +62,7 @@ chillGamer = async () => {
                 }
                 const result = await reviews.find({ email }).toArray();
 
-                if (result.length === 0) {
+                if (Object.keys(result).length === 0) {
                     return res.status(404).json({ error: "No Reviews Found" });
                 }
 
@@ -104,6 +104,11 @@ chillGamer = async () => {
         // Update review
         app.put("/reviews/:id", async (req, res) => {
             const id = req.params.id;
+            if (!ObjectId.isValid(id)) {
+                return res
+                    .status(400)
+                    .json({ error: "Invalid Review ID Format" });
+            }
             const data = req.body;
             const filter = { _id: new ObjectId(id) };
             let updateReviews = {};
@@ -165,7 +170,7 @@ chillGamer = async () => {
         // Get all Users
         app.get("/users", async (req, res) => {
             const result = await users.find({}).toArray();
-            if (result.length === 0) {
+            if (Object.keys(result).length === 0) {
                 return res.status(404).json({ error: "No Data Found" });
             }
             res.status(200).json({
@@ -177,6 +182,11 @@ chillGamer = async () => {
         // My Watch List
         app.get("/users/:id", async (req, res) => {
             const id = req.params.id;
+            if (!ObjectId.isValid(id)) {
+                return res
+                    .status(400)
+                    .json({ error: "Invalid User ID Format" });
+            }
             const query = { _id: new ObjectId(id) };
             const result = await users.findOne(query, {
                 projection: { _id: 0, watchList: 1 },
@@ -221,6 +231,11 @@ chillGamer = async () => {
         // Update users Info
         app.put("/users/:id", async (req, res) => {
             const id = req.params.id;
+            if (!ObjectId.isValid(id)) {
+                return res
+                    .status(400)
+                    .json({ error: "Invalid User ID Format" });
+            }
             const data = req.body;
             const filter = { _id: new ObjectId(id) };
             let updateData = {};
@@ -256,6 +271,11 @@ chillGamer = async () => {
         // Add Watchlist
         app.patch("/users/:id", async (req, res) => {
             const id = req.params.id;
+            if (!ObjectId.isValid(id)) {
+                return res
+                    .status(400)
+                    .json({ error: "Invalid User ID Format" });
+            }
             const data = req.body;
             const filter = { _id: new ObjectId(id) };
             let updateWatchlist = {};
