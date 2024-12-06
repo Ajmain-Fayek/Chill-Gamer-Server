@@ -175,7 +175,7 @@ chillGamer = async () => {
             const reviewExist = await reviews.findOne(query);
 
             if (!reviewExist) {
-                return res.status(404).json({ errpr: "Review Not Found" });
+                return res.status(404).json({ message: "Review Not Found" });
             }
 
             const result = await reviews.deleteOne(query);
