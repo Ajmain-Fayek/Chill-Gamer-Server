@@ -34,6 +34,7 @@ chillGamer = async () => {
         // --------------------------------------------------
         // REVIEWS RELATED API"S                           //
         // --------------------------------------------------
+        // Get All reviews
         app.get("/reviews", async (req, res) => {
             const result = await reviews.find({}).toArray();
             if (Object.keys(result).length === 0) {
@@ -47,6 +48,7 @@ chillGamer = async () => {
 
         // My reviews
         app.get("/reviews/search", async (req, res) => {
+            // console.log("first");
             const { query } = req.query;
             if (
                 typeof query === "string" &&
@@ -72,6 +74,25 @@ chillGamer = async () => {
             } else {
                 return res.status(400).json({ error: "No valid Email Found" });
             }
+        });
+
+        // Get a Single Review
+        app.get("/reviews/:id", async (req, res) => {
+            const id = req.params.id;
+            if (!ObjectId.isValid(id)) {
+                return res
+                    .status(400)
+                    .json({ error: "Invalid Review ID Format" });
+            }
+            const query = { _id: new ObjectId(id) };
+            const result = await reviews.findOne(query);
+            if (Object.keys(result).length === 0) {
+                return res.status(404).json({ error: "No Data Found" });
+            }
+            res.status(200).json({
+                message: `Reviews Found = ${result.title}`,
+                result,
+            });
         });
 
         // Add review
