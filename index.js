@@ -78,6 +78,7 @@ chillGamer = async () => {
 
         // Get a Single Review
         app.get("/reviews/:id", async (req, res) => {
+            // console.log("first")
             const id = req.params.id;
             if (!ObjectId.isValid(id)) {
                 return res
@@ -348,10 +349,18 @@ chillGamer = async () => {
 
             // Check if updateWatchlist is empty
             if (Object.keys(updateWatchlist).length === 0) {
-                return res.status(400).json({ error: "No Valid Field Found" });
+                return res
+                    .status(400)
+                    .json({ error: "No Valid review ID Found" });
             }
+            // console.log(updateWatchlist.watchList);
 
             const WatchList = await users.findOne(filter);
+            if (WatchList?.watchList?.includes(updateWatchlist.watchList)) {
+                return res
+                    .status(202)
+                    .json({ message: "Watchlist Already Exist" });
+            }
             if (WatchList.watchList) {
                 const result = await users.updateOne(filter, {
                     $set: {
@@ -377,6 +386,27 @@ chillGamer = async () => {
                 message: "WatchList Added Successfully",
                 result,
             });
+        });
+
+        // Delete Watch List
+        app.delete("/watchlist/:userId/:itemId", async (req, res) => {
+            const { userId, itemId } = req.params;
+
+            try {
+                const result = await users.updateOne(
+                    { _id: new ObjectId(userId) },
+                    { $pull: { watchList: itemId } } // $pull removes the item from the watchList array
+                );
+
+                if (result.matchedCount === 0) {
+                    return res.status(404).json({ message: "User not found" });
+                }
+
+                res.send({ message: "Item removed successfully" });
+            } catch (error) {
+                // console.error(error);
+                res.status(500).send({ message: "Internal Server Error" });
+            }
         });
 
         // Delete an User
