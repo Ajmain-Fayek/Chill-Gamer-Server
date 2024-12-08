@@ -10,7 +10,7 @@ const app = express();
 app.use(favicon(path.join(__dirname, "public", "favicon.png")));
 app.use(
     cors({
-        origin: ["https://chill-gamer-7f9f1.web.app", "http://localhost:5173"],
+        origin: ["https://chill-gamer-7f9f1.web.app"],
     })
 );
 app.use(express.json());
