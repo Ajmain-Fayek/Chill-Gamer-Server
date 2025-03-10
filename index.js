@@ -7,15 +7,18 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 8800;
 const app = express();
 
+
+// Middleware
 app.use(favicon(path.join(__dirname, "public", "favicon.png")));
 app.use(
     cors({
-        origin: ["https://chill-gamer-7f9f1.web.app"],
+        origin: "*",
     })
 );
 app.use(express.json());
 
-const uri = process.env.URI;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.su4k9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+console.log(uri)
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
     serverApi: {
